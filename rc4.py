@@ -1,31 +1,12 @@
 #!/usr/bin/env python
-#
-#       rc4.py - RC4, ARC4, ARCFOUR algorithm with random salt
-#
-#       Copyright (c) 2009 joonis new media
-#       Author: Thimo Kraemer <thimo.kraemer@joonis.de>
-#
-#       This program is free software; you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation; either version 2 of the License, or
-#       (at your option) any later version.
-#
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#
-#       You should have received a copy of the GNU General Public License
-#       along with this program; if not, write to the Free Software
-#       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#       MA 02110-1301, USA.
-#
 
-import random, base64
+
+import random
+import base64
 import argparse
 from hashlib import sha1
 
-__all__ = ['crypt', 'encrypt', 'decrypt']
+
 
 def rc4(data, key):
     """RC4 algorithm"""
@@ -72,6 +53,7 @@ def encrypt(data, key):
 
     #Encode the final output 
     data = encoding(data)
+
     return data
 
 def decrypt(ct, key):
@@ -91,6 +73,25 @@ def decrypt(ct, key):
     pt = rc4(data[saltLength:], sha1(key + salt).digest())
 
     return pt
+
+def readFile(_file):
+    """If the user chooses to enter a file this function will return a list of the contents"""
+
+    contents = []
+    with open(_file, 'r') as f:
+        contents = f.readlines()
+        for line in contents:
+            line = line.rstrip()
+    f.close()
+    return contents 
+
+def writeFile(_file, contents):
+    """Write to file the new contents"""
+
+    with open(_file, 'wb') as f:
+        for line in contents:
+            f.write(line)
+        f.close()
 
 def main():
     #Check to see if any args were provided. Right now the only arg would be a csv.
@@ -115,13 +116,41 @@ def main():
 
     #if no file is provided, get the data
     if args.file is None:
-       data = raw_input('Data you would like encrypt/decrypt: ')
+        data = raw_input('Data you would like encrypt/decrypt: ')
 
-    #if no key provided, get the key
-    if args.key is None:
-        key = raw_input('Enter the key: ')
+        #if no key provided, get the key
+        if args.key is None:
+            key = raw_input('Enter the key: ')
+        else:
+            key = args.key
+    
+    else:
+        #Get key if not provided
+        if args.key is None:
+            print "[WARNING] If incorrect key entered while decrypting, you will lose the original file."
+            key = raw_input('Enter the key: ')
+        else:
+            key = args.key
+        
+        #read the file
+        contents = readFile(args.file)
 
+        #If encryption is selected, send fileto be encrypted else, have it decrypted
+        if toEncrypt is True:
+            encContents = []
+            for line in contents:     
+                encContents.append(encrypt(line.rstrip(), key) + '\n')
 
+            #Write encypted contents back to file
+            writeFile(args.file, encContents)
+        else:
+            decContents = []
+            for line in contents:     
+                decContents.append(decrypt(line.rstrip(), key) + '\n')
+            
+            writeFile(args.file, decContents)
+
+    #Print out ouput file not being used
     if toEncrypt is True:
         ct = encrypt(data, key)
         print ct
