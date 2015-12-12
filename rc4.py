@@ -36,20 +36,22 @@ def encrypt(data, key):
 
     #Outline what encoding we want to use and the length of the salt
     encoding = base64.b64encode
-    saltLength = 8
+    #saltLength = 8
 
     #Formulate salt
-    salt = ''
-    for n in range(saltLength):
+    #salt = ''
+    #for n in range(saltLength):
         #Use python built in RNG to get a random number and get ascii value for that num
         #This will be used for the salt
-        salt += chr(random.randrange(256))
+    #    salt += chr(random.randrange(256))
  
     #Send plaintext to rc4 algorithm to get ct
-    ct = rc4(data, sha1(key + salt).digest())
+    #ct = rc4(data, sha1(key + salt).digest())
+    ct = rc4(data, sha1(key).digest())
 
     #add that ct to the salt 
-    data = salt + ct
+    #data = salt + ct
+    data = ct
 
     #Encode the final output 
     data = encoding(data)
@@ -61,16 +63,17 @@ def decrypt(ct, key):
 
     #Outline what encoding we want to use and the length of the salt
     decoding = base64.b64decode
-    saltLength = 8
+    #saltLength = 8
 
     #Decode 
     data = decoding(ct)
 
     #Chop off the salf
-    salt = data[:saltLength]
+    #salt = data[:saltLength]
 
     #decrypt the message
-    pt = rc4(data[saltLength:], sha1(key + salt).digest())
+    #pt = rc4(data[saltLength:], sha1(key + salt).digest())
+    pt = rc4(data, sha1(key).digest())
 
     return pt
 
