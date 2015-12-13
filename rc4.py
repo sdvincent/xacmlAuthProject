@@ -4,7 +4,9 @@
 import random
 import base64
 import argparse
+from lxml import etree
 from hashlib import sha1
+
 
 
 
@@ -132,29 +134,18 @@ def authUser(username, password):
     hashedPass = sha1(password).digest()
     hashedPass = encoding(hashedPass)
 
-    accessList = readFile("accessList")
+    #Parse with XML parser to authenticate
+    #If authenticated, return group
+    authenticated, group = False, ''
+    tree = etree.parse('accessList.xml')
+    root = tree.getroot()
+    if hashedPass == tree.xpath('string(//user[@username = "' + username + '"]/password)'):
+        authenticated = True
+        group = tree.xpath('string(//user[@username = "' + username + '"]/group)')
+        return authenticated, group
+    else:
+        return authenticated, group
 
-    users, groups, hashes = [], [], []
-
-    for line in accessList:
-        try:
-            line = line.split(":")
-            users.append(line[0])
-            groups.append(line[1])
-            hashes.append(line[2])
-        except IndexError:
-            pass
-
-    #Compare user input to what is in the Access list
-    i, authenticated, group = 0, False, ''
-    while i < len(users):
-        if users[i] == username:
-            if hashedPass == hashes[i].rstrip():
-                authenticated, group = True, groups[i]
-                break
-        i += 1
-
-    return authenticated, group
 
 def performOperation(toEncrypt, _file, key):
     """Perform the operation requested by the user"""
