@@ -96,7 +96,9 @@ def writeFile(_file, contents):
             f.write(line)
         f.close()
 
-def main():
+def parseArgs():
+    """Parse through the args and return the options"""
+
     #Check to see if any args were provided. Right now the only arg would be a csv.
     parser = argparse.ArgumentParser(description="Fully functional encryption/decryption tool using the RC4 algorithm.")
     parser.add_argument("-f", "--file",  action="store", dest="file", help="If you wish to encrypt/decrypt a whole file.", required=False)
@@ -107,7 +109,7 @@ def main():
     #Get grab users options
     args = parser.parse_args()
 
-    #Validate that either -d or -e are selected
+        #Validate that either -d or -e are selected
     if args.encrypt is False and args.decrypt is False:
         print "[ERROR] User must select -d (decrypt) or -e (encrypt)."
         exit()
@@ -117,26 +119,69 @@ def main():
     if args.encrypt is False:
         toEncrypt = False
 
-    #if no file is provided, get the data
-    if args.file is None:
+
+    return toEncrypt, args.file, args.key
+
+
+
+def authUser(username, password):
+    """This function will authenticate the user based on credentials provided by the user"""
+
+    #Hash the password for comparison
+    encoding = base64.b64encode
+    hashedPass = sha1(password).digest()
+    hashedPass = encoding(hashedPass)
+
+    accessList = readFile("accessList")
+
+    users, groups, hashes = [], [], []
+
+    for line in accessList:
+        try:
+            line = line.split(":")
+            users.append(line[0])
+            groups.append(line[1])
+            hashes.append(line[2])
+        except IndexError:
+            pass
+
+    #Compare user input to what is in the Access list
+    i, authenticated, group = 0, False, ''
+    while i < len(users):
+        if users[i] == username:
+            if hashedPass == hashes[i].rstrip():
+                authenticated, group = True, groups[i]
+                break
+        i += 1
+
+    return authenticated, group
+
+def performOperation(toEncrypt, _file, key):
+    """Perform the operation requested by the user"""
+
+    #if no file is provided, get the data and perform operation
+    if _file is None:
         data = raw_input('Data you would like encrypt/decrypt: ')
 
         #if no key provided, get the key
-        if args.key is None:
+        if key is None:
             key = raw_input('Enter the key: ')
+
+        #Print out ouput file not being used
+        if toEncrypt is True:
+            ct = encrypt(data, key)
+            print ct
         else:
-            key = args.key
-    
+            pt = decrypt(data, key)
+            print pt
     else:
         #Get key if not provided
-        if args.key is None:
+        if key is None:
             print "[WARNING] If incorrect key entered while decrypting, you will lose the original file."
             key = raw_input('Enter the key: ')
-        else:
-            key = args.key
         
         #read the file
-        contents = readFile(args.file)
+        contents = readFile(_file)
 
         #If encryption is selected, send fileto be encrypted else, have it decrypted
         if toEncrypt is True:
@@ -145,24 +190,63 @@ def main():
                 encContents.append(encrypt(line.rstrip(), key) + '\n')
 
             #Write encypted contents back to file
-            writeFile(args.file, encContents)
+            writeFile(_file, encContents)
+
         else:
             decContents = []
             for line in contents:     
                 decContents.append(decrypt(line.rstrip(), key) + '\n')
-            
-            writeFile(args.file, decContents)
 
-    #Print out ouput file not being used
-    if toEncrypt is True:
-        ct = encrypt(data, key)
-        print ct
+            writeFile(_file, decContents)
+
+def valOperation(group, toEncrypt):
+    """Validate the user is able to perform the action requested"""
+
+    valid = False
+
+    #Automatically validate administrator
+    if int(group) == 0:
+        valid = True
+
+    #Regular users can only decrypt 
+    if int(group) == 1:
+        if toEncrypt == False:
+            valid = True
+
+    #Attackers can only encrypt
+    if int(group) == 2:
+        if toEncrypt == True:
+            valid = True
+
+    return valid
+
+    
+def main():
+
+    #Validate user
+    username = raw_input("Enter your username: ")
+    password = raw_input("Enter your password: ")
+
+    authenticated, group = authUser(username, password)
+
+    if authenticated is False:
+        print "The password for " + username + " was incorrect or the user does not exists. Please try again."
+        exit()
+
+    #Parse args
+    toEncrypt, _file, key = parseArgs()
+
+    #Validate the user is in a group that is allowed to perform the action requested
+    if valOperation(group, toEncrypt) == True:
+        #Perform the operation requested
+        performOperation(toEncrypt, _file, key)
     else:
-        pt = decrypt(data,key)
-        print pt
+        print username + " does not have the permission to perform the requested operation."
+        exit()
+    
+
 
 if __name__ == '__main__':
     main()
-
 
 
