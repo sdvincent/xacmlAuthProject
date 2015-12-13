@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<accessList>
+    <user username="admin">
+        <group>0</group>
+        <password>ZfI33NspToFYgxaYJgdHTFJGNvE=</password>
+    </user>
+    <user username="scott">
+        <group>1</group>
+        <password>cMzZAHM41tgd07YnFiG5z5qX6gA=</password>
+    </user>
+    <user username="chaim">
+        <group>2</group>
+        <password>kjfLD7kesqJFhF+fPvQt76LklLY=</password>
+    </user>
+</accessList>
+
