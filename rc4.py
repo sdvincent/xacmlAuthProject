@@ -51,7 +51,7 @@ def encrypt(data, key):
  
     #Send plaintext to rc4 algorithm to get ct
     #ct = rc4(data, sha1(key + salt).digest())
-    ct = rc4(data, sha1(key).digest())
+    ct = rc4(data, key)
 
     #add that ct to the salt 
     #data = salt + ct
@@ -77,7 +77,7 @@ def decrypt(ct, key):
 
     #decrypt the message
     #pt = rc4(data[saltLength:], sha1(key + salt).digest())
-    pt = rc4(data, sha1(key).digest())
+    pt = rc4(data, key)
 
     return pt
 
@@ -105,10 +105,10 @@ def parseArgs():
 
     #Check to see if any args were provided. Right now the only arg would be a csv.
     parser = argparse.ArgumentParser(description="Fully functional encryption/decryption tool using the RC4 algorithm.")
-    parser.add_argument("-f", "--file",  action="store", dest="file", help="If you wish to encrypt/decrypt a whole file.", required=False)
-    parser.add_argument("-e", "--encrypt",  action="store_true",  help="Utilize the encryption cipher.", required=False)
-    parser.add_argument("-d", "--decrypt",  action="store_true",  help="Utilize the de cipher.", required=False)
-    parser.add_argument("-k", "--key",  action="store", dest="key", help="Encryption/decryption key.", required=False)
+    parser.add_argument("-f", "--file", action="store", dest="file", help="If you wish to encrypt/decrypt a whole file.", required=False)
+    parser.add_argument("-e", "--encrypt", action="store_true", help="Utilize the encryption cipher.", required=False)
+    parser.add_argument("-d", "--decrypt", action="store_true", help="Utilize the de cipher.", required=False)
+    parser.add_argument("-k", "--key", action="store", dest="key", help="Encryption/decryption key.", required=False)
 
     #Get grab users options
     args = parser.parse_args()
@@ -119,12 +119,11 @@ def parseArgs():
         exit()
 
     #Find out if encryption of decryption is being used
-    toEncrypt = True
+    action = "Encrypt"
     if args.encrypt is False:
-        toEncrypt = False
+        action = "Decrypt"
 
-
-    return toEncrypt, args.file, args.key
+    return action, args.file, args.key
 
 
 
@@ -149,7 +148,7 @@ def authUser(username, password):
         return authenticated, group
 
 
-def performOperation(toEncrypt, _file, key):
+def performOperation(action, _file, key):
     """Perform the operation requested by the user"""
 
     #if no file is provided, get the data and perform operation
@@ -161,7 +160,7 @@ def performOperation(toEncrypt, _file, key):
             key = raw_input('Enter the key: ')
 
         #Print out ouput file not being used
-        if toEncrypt is True:
+        if action is "Encrypt":
             ct = encrypt(data, key)
             print ct
         else:
@@ -177,7 +176,7 @@ def performOperation(toEncrypt, _file, key):
         contents = readFile(_file)
 
         #If encryption is selected, send fileto be encrypted else, have it decrypted
-        if toEncrypt is True:
+        if action is "Encrypt":
             encContents = []
             for line in contents:     
                 encContents.append(encrypt(line.rstrip(), key) + '\n')
@@ -192,7 +191,7 @@ def performOperation(toEncrypt, _file, key):
 
             writeFile(_file, decContents)
 
-def valOperation(group, toEncrypt):
+def valOperation(group, action):
     """Validate the user is able to perform the action requested using xacml engine"""
 
     valid = False
@@ -201,7 +200,7 @@ def valOperation(group, toEncrypt):
     path = os.path.abspath("xacmlEngine/test.php")
 
     # if you want output
-    proc = subprocess.Popen("php " + path + " " + group + " " + str(toEncrypt) , shell=True, stdout=subprocess.PIPE)
+    proc = subprocess.Popen("php " + path + " " + group + " " + str(action) , shell=True, stdout=subprocess.PIPE)
     response = proc.stdout.read()
     if response == "true":
         valid = True
@@ -213,12 +212,12 @@ def valOperation(group, toEncrypt):
 
     #Regular users can only decrypt 
     if int(group) == 1:
-        if toEncrypt == False:
+        if action == False:
             valid = True
 
     #Attackers can only encrypt
     if int(group) == 2:
-        if toEncrypt == True:
+        if action == True:
             valid = True
     """
     return valid
@@ -236,12 +235,12 @@ def main():
         exit()
 
     #Parse args
-    toEncrypt, _file, key = parseArgs()
+    action, _file, key = parseArgs()
 
     #Validate the user is in a group that is allowed to perform the action requested
-    if valOperation(group, toEncrypt) == True:
+    if valOperation(group, action) == True:
         #Perform the operation requested
-        performOperation(toEncrypt, _file, key)
+        performOperation(action, _file, key)
     else:
         print username + " does not have the permission to perform the requested operation."
         exit()
