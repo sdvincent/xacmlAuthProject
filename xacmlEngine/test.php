@@ -22,22 +22,37 @@ require_once('Operation.php');
 
 
 
-$user = $argv[1];
-$action = $argv[2]
+$group = $argv[1];
+$action = $argv[2];
 
-/*
-Need to figure out how to make custom policies here
-*/
+//Rules for groups
+$admin = $action;
+$user = "Decrypt";
+$attacker = "Encrypt";
 
+//Create base Policies for the 3 groups we have
+switch($group) {
+    case 0:
+        $actionRule = $admin;
+        break;
+    case 1: 
+        $actionRule = $user;
+        break;
+    case 2: 
+        $actionRule = $attacker;
+        break;
+}
 
-$enforcer = new Enforcer;
+$enforcer = new Enforcer();
 
 $decider = new Decider();
 $enforcer->setDecider($decider);
 
 // Create some Matches
-$match1 = new Match('StringEqual', 'property1', 'TestMatch1', 'test');
-$match2 = new Match('StringEqual', 'property1', 'TestMatch2', 'test');
+//Action requested by the user
+$match1 = new Match('StringEqual', 'property1', 'TestMatch1', $action);
+//Action allowed by what policy states that group can do
+$match2 = new Match('StringEqual', 'property1', 'TestMatch2', $actionRule);
 
 // Create a Target container for our Matches
 $target = new Target();
@@ -54,6 +69,7 @@ $rule1->setTarget($target)
     )
     ->setAlgorithm(new DenyOverrides());
 
+
 // Make two new policies and add the Rule to it (with our Match)
 $policy1 = new Policy();
 $policy1->setAlgorithm('AllowOverrides')->setId('Policy1')->addRule($rule1);
@@ -63,7 +79,7 @@ $policy2->setAlgorithm('DenyOverrides')->setId('Policy2')->addRule($rule1);
 // Create the subject with its own Attribute
 $subject = new Subject();
 $subject->addAttribute(
-    new Attribute('property1', 'test')
+    new Attribute('property1', $actionRule)
 );
 
 // Link the Policies to the Resource
@@ -71,7 +87,6 @@ $resource = new Resource();
 $resource
     ->addPolicy($policy1)
     ->addPolicy($policy2);
-
 
 $environment = null;
 $action = new Action();
