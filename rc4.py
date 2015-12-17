@@ -4,6 +4,8 @@
 import random
 import base64
 import argparse
+import os
+import subprocess
 from lxml import etree
 from hashlib import sha1
 
@@ -191,10 +193,20 @@ def performOperation(toEncrypt, _file, key):
             writeFile(_file, decContents)
 
 def valOperation(group, toEncrypt):
-    """Validate the user is able to perform the action requested"""
+    """Validate the user is able to perform the action requested using xacml engine"""
 
     valid = False
 
+    #Get Engine Path
+    path = os.path.abspath("xacmlEngine/test.php")
+
+    # if you want output
+    proc = subprocess.Popen("php " + path + " " + group + " " + str(toEncrypt) , shell=True, stdout=subprocess.PIPE)
+    response = proc.stdout.read()
+    if response == "true":
+        valid = True
+
+    """
     #Automatically validate administrator
     if int(group) == 0:
         valid = True
@@ -208,9 +220,8 @@ def valOperation(group, toEncrypt):
     if int(group) == 2:
         if toEncrypt == True:
             valid = True
-
+    """
     return valid
-
     
 def main():
 
@@ -235,8 +246,6 @@ def main():
         print username + " does not have the permission to perform the requested operation."
         exit()
     
-
-
 if __name__ == '__main__':
     main()
 

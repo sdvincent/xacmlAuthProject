@@ -20,6 +20,16 @@ require_once('Action.php');
 require_once('StringEqual.php'); 
 require_once('Operation.php');
 
+
+
+$user = $argv[1];
+$action = $argv[2]
+
+/*
+Need to figure out how to make custom policies here
+*/
+
+
 $enforcer = new Enforcer;
 
 $decider = new Decider();
@@ -73,8 +83,9 @@ $result = $enforcer->isAuthorized($subject, $resource, $action);
  * for "test1234" failed and DenyOverrides wins so the return is false.
  */
 
-echo "\n\n".' END RESULT: '.var_export($result, true);
-echo "\n\n";
+echo var_export($result, true);
 return var_export($result, true);
 
 ?>
+print $argv[0]."\n";
+print $argv[0]."\n";
