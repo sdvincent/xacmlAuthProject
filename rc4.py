@@ -197,7 +197,7 @@ def valOperation(group, action):
     valid = False
 
     #Get Engine Path
-    path = os.path.abspath("xacmlEngine/test.php")
+    path = os.path.abspath("xacmlEngine/runAuthorization.php")
 
     # if you want output
     proc = subprocess.Popen("php " + path + " " + group + " " + str(action) , shell=True, stdout=subprocess.PIPE)
@@ -205,21 +205,6 @@ def valOperation(group, action):
     if response == "true":
         valid = True
 
-    """
-    #Automatically validate administrator
-    if int(group) == 0:
-        valid = True
-
-    #Regular users can only decrypt 
-    if int(group) == 1:
-        if action == False:
-            valid = True
-
-    #Attackers can only encrypt
-    if int(group) == 2:
-        if action == True:
-            valid = True
-    """
     return valid
     
 def main():
