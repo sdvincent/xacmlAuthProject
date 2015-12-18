@@ -8,6 +8,7 @@ import os
 import subprocess
 from lxml import etree
 from hashlib import sha1
+from getpass import getpass
 
 
 
@@ -210,9 +211,8 @@ def valOperation(group, action):
 def main():
 
     #Validate user
-    username = raw_input("Enter your username: ")
-    password = raw_input("Enter your password: ")
-
+    username = raw_input("Username: ")
+    password = getpass()
     authenticated, group = authUser(username, password)
 
     if authenticated is False:
