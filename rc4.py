@@ -14,7 +14,11 @@ from getpass import getpass
 
 
 def rc4(data, key):
-    """RC4 algorithm"""
+    """
+    Name: rc4
+    Prupose: RC4 algorithm
+    Returns: keystream
+    """
 
     #create S Box and initialize values
     sBox = [i for i in xrange(256)]
@@ -37,53 +41,45 @@ def rc4(data, key):
     return ''.join(msg)
 
 def encrypt(data, key):
-    """RC4 encryption with random salt and final encoding"""
+    """"
+    Name: encrypt
+    Purpose: RC4 encryption
+    Returns: ciphertext
+    """
 
     #Outline what encoding we want to use and the length of the salt
     encoding = base64.b64encode
-    #saltLength = 8
 
-    #Formulate salt
-    #salt = ''
-    #for n in range(saltLength):
-        #Use python built in RNG to get a random number and get ascii value for that num
-        #This will be used for the salt
-    #    salt += chr(random.randrange(256))
- 
-    #Send plaintext to rc4 algorithm to get ct
-    #ct = rc4(data, sha1(key + salt).digest())
     ct = rc4(data, key)
 
-    #add that ct to the salt 
-    #data = salt + ct
-    data = ct
-
     #Encode the final output 
-    data = encoding(data)
+    ct = encoding(ct)
 
-    return data
+    return ct
 
 def decrypt(ct, key):
-    """RC4 decryption of encoded data"""
+    """"
+    Name: decrypt
+    Purpose: RC4 decryption
+    Returns: plaintext
+    """
 
     #Outline what encoding we want to use and the length of the salt
     decoding = base64.b64decode
-    #saltLength = 8
 
     #Decode 
     data = decoding(ct)
 
-    #Chop off the salf
-    #salt = data[:saltLength]
-
-    #decrypt the message
-    #pt = rc4(data[saltLength:], sha1(key + salt).digest())
     pt = rc4(data, key)
 
     return pt
 
 def readFile(_file):
-    """If the user chooses to enter a file this function will return a list of the contents"""
+    """
+    Name: readFile
+    Purpose: If the user chooses to enter a file this function will return a list of the contents
+    Returns: List of contetns of the file
+    """
 
     contents = []
     with open(_file, 'r') as f:
@@ -94,7 +90,11 @@ def readFile(_file):
     return contents 
 
 def writeFile(_file, contents):
-    """Write to file the new contents"""
+    """
+    Name: writeFile
+    Purpose: Write to file the new contents
+    Returns: Nothing
+    """
 
     with open(_file, 'wb') as f:
         for line in contents:
@@ -102,7 +102,11 @@ def writeFile(_file, contents):
         f.close()
 
 def parseArgs():
-    """Parse through the args and return the options"""
+    """
+    Name: parseArgs
+    Purpose: Parse through the args and return the options
+    Returns: action, file, and key 
+    """
 
     #Check to see if any args were provided. Right now the only arg would be a csv.
     parser = argparse.ArgumentParser(description="Fully functional encryption/decryption tool using the RC4 algorithm.")
@@ -118,6 +122,9 @@ def parseArgs():
     if args.encrypt is True and args.decrypt is True:
         print "[ERROR] User must select -d (decrypt) or -e (encrypt)."
         exit()
+    if args.encrypt is False and args.decrypt is False:
+        print "[ERROR] User must select -d (decrypt) or -e (encrypt)."
+        exit()
 
     #Find out if encryption of decryption is being used
     action = "Encrypt"
@@ -129,7 +136,11 @@ def parseArgs():
 
 
 def authUser(username, password):
-    """This function will authenticate the user based on credentials provided by the user"""
+    """
+    Name: authUser
+    Purpose: This function will authenticate the user based on credentials provided by the user
+    Returns: whether user is authed and what group they are in if authed
+    """
 
     #Hash the password for comparison
     encoding = base64.b64encode
@@ -150,7 +161,11 @@ def authUser(username, password):
 
 
 def performOperation(action, _file, key):
-    """Perform the operation requested by the user"""
+    """
+    Name: performOperation
+    Purpose: Perform the operation requested by the user
+    Returns: Nothing
+    """
 
     #if no file is provided, get the data and perform operation
     if _file is None:
@@ -193,7 +208,11 @@ def performOperation(action, _file, key):
             writeFile(_file, decContents)
 
 def valOperation(group, action):
-    """Validate the user is able to perform the action requested using xacml engine"""
+    """
+    Name: valOperation
+    Purpose: Validate the user is able to perform the action requested using xacml engine
+    Returns: Whether the user can do the action or not
+    """
 
     valid = False
 
