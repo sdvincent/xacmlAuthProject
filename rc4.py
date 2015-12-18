@@ -115,7 +115,7 @@ def parseArgs():
     args = parser.parse_args()
 
         #Validate that either -d or -e are selected
-    if args.encrypt is False and args.decrypt is False:
+    if args.encrypt is True and args.decrypt is True:
         print "[ERROR] User must select -d (decrypt) or -e (encrypt)."
         exit()
 
@@ -210,6 +210,9 @@ def valOperation(group, action):
     
 def main():
 
+    #Parse args
+    action, _file, key = parseArgs()
+
     #Validate user
     username = raw_input("Username: ")
     password = getpass()
@@ -218,9 +221,6 @@ def main():
     if authenticated is False:
         print "The password for " + username + " was incorrect or the user does not exists. Please try again."
         exit()
-
-    #Parse args
-    action, _file, key = parseArgs()
 
     #Validate the user is in a group that is allowed to perform the action requested
     if valOperation(group, action) == True:
