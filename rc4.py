@@ -63,7 +63,7 @@ def decrypt(ct, key):
     Purpose: RC4 decryption
     Returns: plaintext
     """
-
+    
     #Outline what encoding we want to use and the length of the salt
     decoding = base64.b64decode
 

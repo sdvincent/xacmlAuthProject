@@ -61,6 +61,6 @@ def decrypt(data, key, decode=base64.b64decode, salt_length=16):
 
 if __name__ == '__main__':
     for i in range(10):
-        data = encrypt('My last example is...', 'csec')
+        data = encrypt('this is my message!', 'supersecret')
         print data
-        print decrypt(data, 'csec')
+        print decrypt(data, 'supersecret')
